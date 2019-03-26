@@ -73,7 +73,7 @@ public class NumeroController {
 			return ;
 		}
 		
-		if(!model.tentativoValido(tentativo)) {
+		if(model.tentativoValido(tentativo)) {
 			txtMessaggi.appendText("Range non valido\n");
 		}
 		
@@ -85,11 +85,11 @@ public class NumeroController {
 			boxControlloTentativi.setDisable(true);
 		}
 		else if(risultato<0){
-			txtMessaggi.appendText("Tentativo troppo basso");
+			txtMessaggi.appendText("Tentativo troppo basso\n");
 		}
 		
 		else if(risultato>0) {
-			txtMessaggi.appendText("tentativo troppo alto");
+			txtMessaggi.appendText("tentativo troppo alto\n");
 		}
 
 		// Aggiornare interfaccia con n. tentativi rimasti
