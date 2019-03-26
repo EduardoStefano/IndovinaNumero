@@ -2,6 +2,8 @@ package it.polito.tdp.numero;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.numer.model.NumeroModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -10,12 +12,11 @@ import javafx.scene.layout.HBox;
 
 public class NumeroController {
 
-	private final int NMAX = 100;
-	private final int TMAX = 8;
-
-	private int segreto;
-	private int tentativiFatti;
-	private boolean inGioco = false;
+	private NumeroModel model;
+	
+	public void setModel(NumeroModel model) {
+		this.model = model;
+	}
 
 	@FXML
 	private ResourceBundle resources;
@@ -44,17 +45,15 @@ public class NumeroController {
 	void handleNuovaPartita(ActionEvent event) {
 		// Gestisce l'inizio di una nuova partita
 
-		// Logica del gioco
-		this.segreto = (int) (Math.random() * NMAX) + 1;
-		this.tentativiFatti = 0;
-		this.inGioco = true;
-
 		// Gestione dell'interfaccia
 		boxControllopartita.setDisable(true);
 		boxControlloTentativi.setDisable(false);
 		txtMessaggi.clear();
-		txtRimasti.setText(Integer.toString(this.TMAX));
-
+		txtTentativo.clear();
+		txtRimasti.setText(Integer.toString(model.getTMAX()));
+		
+		//comunico al modello di iniziare una nuova partita
+		model.newGame();
 	}
 
 	@FXML
@@ -63,7 +62,7 @@ public class NumeroController {
 		// Leggi il valore del tentativo
 		String ts = txtTentativo.getText();
 
-		// Controlla se è valido
+		// Controlla se è valido il tipo di dato
 
 		int tentativo ;
 		try {
@@ -74,43 +73,37 @@ public class NumeroController {
 			return ;
 		}
 		
-
-		tentativiFatti++ ;
+		if(!model.tentativoValido(tentativo)) {
+			txtMessaggi.appendText("Range non valido\n");
+		}
 		
-		// Controlla se ha indovinato
-		// -> fine partita
-		if(tentativo==segreto) {
-			txtMessaggi.appendText("Complimenti, hai indovinato in "+tentativiFatti+" tentativi\n");
-			
+		int risultato = model.tentativo(tentativo);
+		
+		if(risultato==0) {
+			txtMessaggi.appendText("Complimenti, hai indovinato in "+model.getTentativiFatti()+"tentativi");
 			boxControllopartita.setDisable(false);
 			boxControlloTentativi.setDisable(true);
-			this.inGioco=false ;
-			return ;
 		}
-
-		// Verifica se ha esaurito i tentativi
-		// -> fine partita
-		if(tentativiFatti==TMAX) {
-			txtMessaggi.appendText("Hai PERSO, il numero segreto era: "+segreto+"\n");
-			
-			boxControllopartita.setDisable(false);
-			boxControlloTentativi.setDisable(true);
-			this.inGioco=false ;
-			return ;
-
+		else if(risultato<0){
+			txtMessaggi.appendText("Tentativo troppo basso");
 		}
-
-		// Informa se era troppo alto/troppo basso
-		// -> stampa messaggio
-		if(tentativo<segreto) {
-			txtMessaggi.appendText("Tentativo troppo BASSO\n");
-		} else {
-			txtMessaggi.appendText("Tentativo troppo ALTO\n");
+		
+		else if(risultato>0) {
+			txtMessaggi.appendText("tentativo troppo alto");
 		}
 
 		// Aggiornare interfaccia con n. tentativi rimasti
-		txtRimasti.setText(Integer.toString(TMAX-tentativiFatti));
+		txtRimasti.setText(Integer.toString(model.getTMAX()-model.getTentativiFatti()));
 
+		if(!model.isInGioco()) {
+			//la partita è finita
+			if(risultato!=0) {
+				txtMessaggi.appendText("Hai perso");
+				txtMessaggi.appendText(String.format("\nil numero segreto era: %d", model.getSegreto()));
+				boxControllopartita.setDisable(false);
+				boxControlloTentativi.setDisable(true);
+			}
+		}
 	}
 
 	@FXML
