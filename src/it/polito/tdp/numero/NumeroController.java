@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.numer.model.NumeroModel;
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -16,6 +17,7 @@ public class NumeroController {
 	
 	public void setModel(NumeroModel model) {
 		this.model = model;
+		txtRimasti.textProperty().bind(Bindings.convert(model.tentativiFattiProperty()));
 	}
 
 	@FXML
@@ -50,7 +52,7 @@ public class NumeroController {
 		boxControlloTentativi.setDisable(false);
 		txtMessaggi.clear();
 		txtTentativo.clear();
-		txtRimasti.setText(Integer.toString(model.getTMAX()));
+		//txtRimasti.setText(Integer.toString(0));
 		
 		//comunico al modello di iniziare una nuova partita
 		model.newGame();
@@ -73,8 +75,9 @@ public class NumeroController {
 			return ;
 		}
 		
-		if(model.tentativoValido(tentativo)) {
-			txtMessaggi.appendText("Range non valido\n");
+		if(!model.tentativoValido(tentativo)) {
+			txtMessaggi.appendText(String.format("Tentativo non valido: devi inserire un numero tra %d e %d, senza ripetere lo stesso tentativo", 1, model.getNMAX()));
+			return;
 		}
 		
 		int risultato = model.tentativo(tentativo);
@@ -84,16 +87,17 @@ public class NumeroController {
 			boxControllopartita.setDisable(false);
 			boxControlloTentativi.setDisable(true);
 		}
+		
 		else if(risultato<0){
 			txtMessaggi.appendText("Tentativo troppo basso\n");
 		}
 		
 		else if(risultato>0) {
-			txtMessaggi.appendText("tentativo troppo alto\n");
+			txtMessaggi.appendText("Tentativo troppo alto\n");
 		}
 
 		// Aggiornare interfaccia con n. tentativi rimasti
-		txtRimasti.setText(Integer.toString(model.getTMAX()-model.getTentativiFatti()));
+		// txtRimasti.setText(Integer.toString(model.getTentativiFatti()));
 
 		if(!model.isInGioco()) {
 			//la partita è finita
